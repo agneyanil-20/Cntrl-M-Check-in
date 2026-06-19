@@ -62,9 +62,9 @@ export default function App() {
   const [networkGateway, setNetworkGateway] = useState<string>('192.168.29.1');
   const [networkLocalIP, setNetworkLocalIP] = useState<string>('192.168.29.15');
   const [realPublicIP, setRealPublicIP] = useState<string>('Detecting...');
-  const [officeNetworkConnected, setOfficeNetworkConnected] = useState<boolean>(true);
-  const [isValidatingNetwork, setIsValidatingNetwork] = useState<boolean>(false);
-  const [networkMessage, setNetworkMessage] = useState<string>('Connected to Office Network');
+  const [officeNetworkConnected, setOfficeNetworkConnected] = useState<boolean>(false);
+  const [isValidatingNetwork, setIsValidatingNetwork] = useState<boolean>(true);
+  const [networkMessage, setNetworkMessage] = useState<string>('Not Connected to Office Network');
   const [bypassAttemptShow, setBypassAttemptShow] = useState<boolean>(false);
   const [supabaseStatusMsg, setSupabaseStatusMsg] = useState<string>('Checking...');
 
@@ -557,7 +557,7 @@ export default function App() {
                     <button
                       id="user-name-profile-badge"
                       onClick={() => setShowProfileSettings(true)}
-                      className="group inline-flex items-center gap-1.5 py-0.5 px-3 text-xs font-bold text-black bg-[#EAFF00] hover:bg-[#DFFF00] rounded-full border-2 border-black neo-shadow transition-all cursor-pointer"
+                      className="group inline-flex items-center gap-1.5 py-0.5 px-3 text-xs font-bold text-black bg-[#EAFF00] hover:bg-[#DFFF00] rounded-full border border-black/15 shadow-sm transition-all cursor-pointer"
                       title="Edit profile & user name"
                     >
                       <span className="text-xs">{profile.avatarEmoji}</span>
@@ -594,7 +594,7 @@ export default function App() {
                   />
                   
                   {/* Mini Status speech bubble representing user current status */}
-                  <div className="absolute top-1 right-1 bg-white border-2 border-black px-2.5 py-1 rounded-xl text-[10px] font-sans font-extrabold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] max-w-[120px] leading-snug animate-bounce">
+                  <div className="absolute top-1 right-1 bg-white border border-gray-200 px-2.5 py-1 rounded-xl text-[10px] font-sans font-extrabold shadow-sm max-w-[120px] leading-snug animate-bounce">
                     💡 <span className="text-gray-800">{profile.statusText || 'Guarding castle...'}</span>
                   </div>
                 </motion.div>
@@ -635,10 +635,10 @@ export default function App() {
                         disabled={!officeNetworkConnected}
                         whileHover={officeNetworkConnected ? { scale: 1.02 } : {}}
                         whileTap={officeNetworkConnected ? { scale: 0.98 } : {}}
-                        className={`w-full h-16 text-xl font-retro font-black uppercase tracking-wider rounded-2xl border-2 border-black select-none transition-all flex items-center justify-center gap-2 ${
+                        className={`w-full h-16 text-xl font-retro font-black uppercase tracking-wider rounded-2xl border select-none transition-all flex items-center justify-center gap-2 ${
                           officeNetworkConnected 
-                            ? 'bg-[#EAFF00] hover:bg-[#DFFF00] text-black neo-shadow hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] cursor-pointer' 
-                            : 'bg-gray-200 text-gray-400 opacity-50 cursor-not-allowed shadow-none'
+                            ? 'bg-[#EAFF00] hover:bg-[#DFFF00] text-black border-yellow-300 shadow-md cursor-pointer' 
+                            : 'bg-gray-100 text-gray-400 border-gray-200 opacity-50 cursor-not-allowed shadow-none'
                         }`}
                       >
                         <span className="text-2xl">⚡</span>
@@ -653,7 +653,7 @@ export default function App() {
                         id="checked-in-success-badge"
                         initial={{ scale: 0.95, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className="w-full h-16 rounded-2xl border-2 border-black bg-emerald-500 text-white flex flex-col items-center justify-center neo-shadow select-none"
+                        className="w-full h-16 rounded-2xl border border-emerald-250 bg-emerald-500 text-white flex flex-col items-center justify-center shadow-md select-none"
                       >
                         <div className="font-retro font-black uppercase text-lg tracking-widest flex items-center gap-1.5">
                           <span>✓ Checked In</span>
@@ -672,10 +672,10 @@ export default function App() {
                         disabled={!officeNetworkConnected}
                         whileHover={officeNetworkConnected ? { scale: 1.02 } : {}}
                         whileTap={officeNetworkConnected ? { scale: 0.98 } : {}}
-                        className={`w-full py-2.5 text-xs font-retro font-black uppercase tracking-wider rounded-xl border-2 border-black transition-all cursor-pointer select-none ${
+                        className={`w-full py-2.5 text-xs font-retro font-black uppercase tracking-wider rounded-xl border transition-all cursor-pointer select-none ${
                           officeNetworkConnected
-                            ? 'bg-rose-500 hover:bg-rose-600 text-white neo-shadow-sm'
-                            : 'bg-gray-200 text-gray-400 opacity-50 cursor-not-allowed shadow-none border-gray-350'
+                            ? 'bg-rose-500 hover:bg-rose-600 border-rose-450 text-white shadow-sm'
+                            : 'bg-gray-100 text-gray-400 border-gray-250 opacity-40 cursor-not-allowed shadow-none'
                         }`}
                       >
                         🚪 Check Out & End Duty
@@ -858,7 +858,7 @@ export default function App() {
           )}
 
           {/* Sticky Bottom Navigation Bar (Apple Health/Notion style) */}
-          <div className="border-t-2 border-black bg-white/95 backdrop-blur py-3.5 px-4 flex items-center justify-around translate-y-1.5 -mx-6 mt-auto rounded-b-[28px]">
+          <div className="border-t border-gray-100 bg-white/95 backdrop-blur py-3.5 px-4 flex items-center justify-around translate-y-1.5 -mx-6 mt-auto rounded-b-[28px] shadow-[0_-4px_16px_rgba(0,0,0,0.03)]">
             <button
               type="button"
               onClick={() => setActivePage('punch')}

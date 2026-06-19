@@ -41,12 +41,12 @@ export default function CoworkersList({ coworkers, onInteract }: CoworkersListPr
         )}
       </AnimatePresence>
 
-      <div className="flex justify-between items-center bg-gray-100 p-1 rounded-xl border border-black/20">
+      <div className="flex justify-between items-center bg-gray-100 p-1 rounded-xl border border-gray-200">
         <button
           onClick={() => setActiveTab('all')}
           className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
             activeTab === 'all'
-              ? 'bg-white text-black border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+              ? 'bg-white text-black border border-gray-200 shadow-sm'
               : 'text-gray-500'
           }`}
         >
@@ -56,7 +56,7 @@ export default function CoworkersList({ coworkers, onInteract }: CoworkersListPr
           onClick={() => setActiveTab('inside')}
           className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
             activeTab === 'inside'
-              ? 'bg-white text-black border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]'
+              ? 'bg-white text-black border border-gray-200 shadow-sm'
               : 'text-gray-500'
           }`}
         >
@@ -68,18 +68,18 @@ export default function CoworkersList({ coworkers, onInteract }: CoworkersListPr
         {filteredCoworkers.map((cw) => (
           <div
             key={cw.id}
-            className={`p-2.5 rounded-xl border-2 transition-all flex items-center justify-between ${
+            className={`p-2.5 rounded-xl border transition-all flex items-center justify-between ${
               cw.isCheckedIn
-                ? 'border-black bg-emerald-50/40 hover:bg-emerald-50'
-                : 'border-dashed border-gray-300 bg-gray-50/50'
+                ? 'border-emerald-200 bg-emerald-50/40 hover:bg-emerald-50'
+                : 'border-dashed border-gray-200 bg-gray-50/50'
             }`}
           >
             <div className="flex items-center gap-3">
               {/* Avatar with Status badge */}
-              <div className="relative bg-white w-10 h-10 rounded-full border-2 border-black flex items-center justify-center text-xl shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+              <div className="relative bg-white w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-xl shadow-xs">
                 {cw.avatarEmoji}
                 {cw.isCheckedIn && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border border-black" />
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border border-white" />
                 )}
               </div>
               <div>
@@ -100,20 +100,20 @@ export default function CoworkersList({ coworkers, onInteract }: CoworkersListPr
             <div className="flex flex-col items-end gap-1.5">
               {cw.isCheckedIn ? (
                 <>
-                  <span className="text-[9px] font-retro font-bold bg-[#EAFF00] px-1 border border-black rounded text-black shrink-0">
+                  <span className="text-[9px] font-retro font-bold bg-[#EAFF00] px-1.5 py-0.5 border border-yellow-300 rounded text-black shrink-0">
                     🛡️ {cw.timeFormatted || '08:00 AM'}
                   </span>
                   <div className="flex gap-1">
                     <button
                       onClick={() => triggerSalute(cw.name, '🍺 Toast')}
-                      className="p-1 rounded bg-white hover:bg-amber-100 border border-black text-xs hover:scale-110 active:scale-95 transition-all"
+                      className="p-1.5 rounded bg-white hover:bg-amber-50 border border-gray-200 text-xs hover:scale-110 active:scale-95 transition-all shadow-xs"
                       title="Send toast"
                     >
                       🍺
                     </button>
                     <button
                       onClick={() => triggerSalute(cw.name, '⚔️ Salute')}
-                      className="p-1 rounded bg-white hover:bg-sky-100 border border-black text-xs hover:scale-110 active:scale-95 transition-all"
+                      className="p-1.5 rounded bg-white hover:bg-sky-50 border border-gray-200 text-xs hover:scale-110 active:scale-95 transition-all shadow-xs"
                       title="Salute peer"
                     >
                       ⚔️
@@ -121,7 +121,7 @@ export default function CoworkersList({ coworkers, onInteract }: CoworkersListPr
                   </div>
                 </>
               ) : (
-                <span className="text-[9px] font-medium text-gray-400 bg-gray-100 rounded px-1 border border-gray-200">
+                <span className="text-[9px] font-medium text-gray-400 bg-gray-100 rounded px-1.5 py-0.5 border border-gray-200">
                   ⛺ Off Duty
                 </span>
               )}

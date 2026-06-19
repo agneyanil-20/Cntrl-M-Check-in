@@ -7,37 +7,36 @@
   --font-retro: "VT323", monospace;
 }
 
-/* Custom Neo-brutalist styles to keep things super tidy */
+/* Custom clean styles to replace harsh black borders with elegant modern aesthetics */
 .neo-border {
-  border: 3px solid #000000;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .neo-border-sm {
-  border: 2px solid #000000;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .neo-shadow {
-  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
 }
 
 .neo-shadow-lg {
-  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
 }
 
 .neo-shadow-green {
-  box-shadow: 4px 4px 0px 0px rgba(34, 197, 94, 1);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
 }
 
-/* Sketchy scrollbar style */
+/* Elegant sleek scrollbar style */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-left: 2px solid #000;
+  background: #f8f9fa;
 }
 ::-webkit-scrollbar-thumb {
-  background: #000;
-  border: 2px solid #f1f1f1;
+  background: #cbd5e1;
+  border-radius: 9999px;
 }
 

@@ -17,10 +17,10 @@ export function NetworkStatus({ isConnected, onToggleSimulate, isCheckedIn }: Ne
           type="button"
           onClick={onToggleSimulate}
           title="Click to toggle simulated network location"
-          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-black border-2 border-black neo-shadow-sm cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border cursor-pointer transition-all hover:scale-105 active:scale-95 ${
             isConnected
-              ? 'bg-emerald-400 text-black'
-              : 'bg-rose-100 text-rose-950 border-rose-500 hover:bg-rose-200'
+              ? 'bg-emerald-50 text-emerald-950 border-emerald-300'
+              : 'bg-rose-50 text-rose-950 border-rose-300'
           }`}
         >
           <span className="flex h-2.5 w-2.5 relative">
@@ -46,9 +46,7 @@ export function NetworkStatus({ isConnected, onToggleSimulate, isCheckedIn }: Ne
           <p className="text-xs text-rose-600 font-semibold flex items-center justify-center gap-1.5 animate-pulse">
             <AlertTriangle className="w-3.5 h-3.5" />
             <span>
-              {isCheckedIn 
-                ? 'Please connect to the office network to check out.' 
-                : 'Please connect to the office network to check in.'}
+              Please connect to the office WiFi to mark attendance.
             </span>
           </p>
         ) : (
