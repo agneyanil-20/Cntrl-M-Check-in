@@ -160,14 +160,6 @@ export default function App() {
 
     try {
       const res = await verifyActualOfficeNetwork();
-      
-      // Log validation failures in console as requested
-      if (!res.success) {
-        console.warn(`[Network Sentinel] Validation failed at ${new Date().toLocaleTimeString()}`, res);
-      } else {
-        console.log(`[Network Sentinel] Verified at ${new Date().toLocaleTimeString()}`);
-      }
-
       setNetworkSSID(res.ssid);
       setNetworkGateway(res.gatewayIp);
       setNetworkLocalIP(res.localIp);
@@ -200,7 +192,6 @@ export default function App() {
     window.addEventListener('online', triggerValidation);
     window.addEventListener('offline', triggerValidation);
     window.addEventListener('focus', triggerValidation);
-    window.addEventListener('pageshow', triggerValidation); // Safari specific background resume
 
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -208,6 +199,12 @@ export default function App() {
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Network Information API (Varying device support, e.g. Android Chrome)
+    const activeConnection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    if (activeConnection) {
+      activeConnection.addEventListener('change', triggerValidation);
+    }
 
     // Gentle background polling interval (checks every 5 seconds for connectivity updates)
     const refreshCheckerInterval = setInterval(async () => {
@@ -218,8 +215,10 @@ export default function App() {
       window.removeEventListener('online', triggerValidation);
       window.removeEventListener('offline', triggerValidation);
       window.removeEventListener('focus', triggerValidation);
-      window.removeEventListener('pageshow', triggerValidation);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (activeConnection) {
+        activeConnection.removeEventListener('change', triggerValidation);
+      }
       clearInterval(refreshCheckerInterval);
     };
   }, []);
@@ -666,7 +665,6 @@ export default function App() {
                       Reconnect to office network to continue attendance.
                     </p>
                   )}
-
                 </div>
 
                 <AnimatePresence mode="wait">
