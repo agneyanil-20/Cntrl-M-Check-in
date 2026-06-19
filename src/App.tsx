@@ -6,7 +6,7 @@ import CoworkersList from './components/CoworkersList';
 import Confetti from './components/Confetti';
 import EmployersSwitch, { OFFICIAL_EMPLOYERS } from './components/EmployersSwitch';
 import { getSupabase } from './lib/supabase';
-import { validateOfficeNetwork, verifyOfficeNetwork } from './lib/network';
+import { validateOfficeNetwork, verifyOfficeNetwork, verifyActualOfficeNetwork } from './lib/network';
 import { NetworkStatus } from './components/NetworkStatus';
 import { 
   ShieldAlert, 
@@ -57,14 +57,15 @@ export default function App() {
     };
   });
 
-  // Office network validation parameters
-  const [networkSSID, setNetworkSSID] = useState<string>('CntrlM-5G');
-  const [networkGateway, setNetworkGateway] = useState<string>('192.168.29.1');
-  const [networkLocalIP, setNetworkLocalIP] = useState<string>('192.168.29.15');
+  // Office network validation parameters - Disabled/Disconnected by default
+  const [networkSSID, setNetworkSSID] = useState<string>('Unknown Wi-Fi');
+  const [networkGateway, setNetworkGateway] = useState<string>('Unknown Gateway');
+  const [networkLocalIP, setNetworkLocalIP] = useState<string>('Unknown IP');
   const [realPublicIP, setRealPublicIP] = useState<string>('Detecting...');
   const [officeNetworkConnected, setOfficeNetworkConnected] = useState<boolean>(false);
   const [isValidatingNetwork, setIsValidatingNetwork] = useState<boolean>(true);
   const [networkMessage, setNetworkMessage] = useState<string>('Not Connected to Office Network');
+  const [networkDiagnostics, setNetworkDiagnostics] = useState<string>('Initializing diagnostics scanner...');
   const [bypassAttemptShow, setBypassAttemptShow] = useState<boolean>(false);
   const [supabaseStatusMsg, setSupabaseStatusMsg] = useState<string>('Checking...');
 
@@ -140,8 +141,8 @@ export default function App() {
     localStorage.setItem('office_checkin_user_statuses_v1', JSON.stringify(userCheckInStatuses));
   }, [userCheckInStatuses]);
 
-  // Helper to re-scan/detect network parameters
-  const runNetworkValidation = () => {
+  // Helper to re-scan/detect network parameters using real unmocked services
+  const runNetworkValidation = async () => {
     setIsValidatingNetwork(true);
     setNetworkMessage('Interrogating local network interfaces...');
     
@@ -157,22 +158,31 @@ export default function App() {
         setRealPublicIP('203.115.63.18');
       });
 
-    setTimeout(() => {
-      const isValid = verifyOfficeNetwork(networkSSID, networkGateway, networkLocalIP);
-      setOfficeNetworkConnected(isValid);
-      setIsValidatingNetwork(false);
+    try {
+      const res = await verifyActualOfficeNetwork();
+      setNetworkSSID(res.ssid);
+      setNetworkGateway(res.gatewayIp);
+      setNetworkLocalIP(res.localIp);
+      setOfficeNetworkConnected(res.success);
+      setNetworkDiagnostics(res.diagnostics);
       
-      if (isValid) {
+      if (res.success) {
         setNetworkMessage('Connected to Office Network');
       } else {
         setNetworkMessage('Not Connected to Office Network');
       }
-    }, 1200);
+    } catch (err: any) {
+      setOfficeNetworkConnected(false);
+      setNetworkMessage('Not Connected to Office Network');
+      setNetworkDiagnostics(`[System Error] Scanner encountered a fatal exception: ${err?.message || err}`);
+    } finally {
+      setIsValidatingNetwork(false);
+    }
   };
 
   useEffect(() => {
     runNetworkValidation();
-  }, [networkSSID, networkGateway, networkLocalIP]);
+  }, []);
 
   useEffect(() => {
     const sb = getSupabase();
@@ -604,6 +614,11 @@ export default function App() {
               <NetworkStatus 
                 isConnected={officeNetworkConnected}
                 isCheckedIn={isCheckedIn}
+                ssid={networkSSID}
+                gatewayIp={networkGateway}
+                localIp={networkLocalIP}
+                isValidating={isValidatingNetwork}
+                onRecheck={runNetworkValidation}
               />
 
               {/* 4 & 5. Check In Action Button (Height: 64px, Full Width, Bright Yellow, Sticky/Placed prominent) */}
@@ -808,6 +823,24 @@ export default function App() {
                   <p className="text-[9px] text-gray-400 italic mt-1 bg-gray-50 p-1.5 rounded border border-dashed text-center">
                     Auto-sends secure check-in records to active cloud databases when online.
                   </p>
+                </div>
+
+                {/* Live Verification Debug result display */}
+                <div className="border-t border-black/10 pt-3 mt-3">
+                  <h4 className="text-[10px] font-retro font-black uppercase text-gray-400 mb-1.5 flex items-center gap-1">
+                    🛰️ Network Sentinel Diagnostic Stream
+                  </h4>
+                  <pre id="live-network-diagnostics-console" className="p-2.5 bg-gray-900 border border-gray-850 text-green-400 font-mono text-[9px] rounded-xl overflow-x-auto leading-relaxed shadow-inner max-h-[120px] overflow-y-auto whitespace-pre-wrap text-left">
+                    {networkDiagnostics || '[Network Sentinel Active - Requesting scan...]'}
+                  </pre>
+                  <button
+                    type="button"
+                    onClick={runNetworkValidation}
+                    disabled={isValidatingNetwork}
+                    className="w-full mt-2.5 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-45 text-white font-retro font-bold uppercase rounded-lg text-[9px] tracking-wider transition-colors cursor-pointer text-center"
+                  >
+                    {isValidatingNetwork ? 'Scanning Interfaces...' : '🔄 Recalibrate Verification Protocol'}
+                  </button>
                 </div>
               </div>
             </div>
