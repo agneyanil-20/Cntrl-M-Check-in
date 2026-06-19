@@ -1,0 +1,6 @@
+{
+  "name": "Office Check-In",
+  "description": "A playful, sketchy-styled employee check-in application with customized profile settings, real-time feedback, and history logs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

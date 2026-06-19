@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Space+Grotesk:wght@400..700&family=VT323&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Space Grotesk", sans-serif;
+  --font-rounded: "Fredoka", sans-serif;
+  --font-retro: "VT323", monospace;
+}
+
+/* Custom Neo-brutalist styles to keep things super tidy */
+.neo-border {
+  border: 3px solid #000000;
+}
+
+.neo-border-sm {
+  border: 2px solid #000000;
+}
+
+.neo-shadow {
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.neo-shadow-lg {
+  box-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+}
+
+.neo-shadow-green {
+  box-shadow: 4px 4px 0px 0px rgba(34, 197, 94, 1);
+}
+
+/* Sketchy scrollbar style */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-left: 2px solid #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #000;
+  border: 2px solid #f1f1f1;
+}
+
