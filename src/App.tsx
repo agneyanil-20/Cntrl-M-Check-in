@@ -7,7 +7,7 @@ import Confetti from './components/Confetti';
 import EmployersSwitch, { OFFICIAL_EMPLOYERS } from './components/EmployersSwitch';
 import { getSupabase } from './lib/supabase';
 import { validateOfficeNetwork, verifyOfficeNetwork, verifyActualOfficeNetwork } from './lib/network';
-import { NetworkStatus } from './components/NetworkStatus';
+import { SlideAction } from './components/SlideAction';
 import { 
   ShieldAlert, 
   Settings, 
@@ -650,101 +650,39 @@ export default function App() {
                 </motion.div>
               </div>
 
-              {/* 3. Reusable Network Status component */}
-              <NetworkStatus 
-                isConnected={officeNetworkConnected}
-                isCheckedIn={isCheckedIn}
-                ssid={networkSSID}
-                gatewayIp={networkGateway}
-                localIp={networkLocalIP}
-                isValidating={isValidatingNetwork}
-                onRecheck={runNetworkValidation}
-              />
-
               {/* 4 & 5. Check In Action Button (Height: 64px, Full Width, Bright Yellow, Sticky/Placed prominent) */}
               <div id="check-in-control-section" className="w-full">
                 <AnimatePresence mode="wait">
                   {!isCheckedIn ? (
-                    // Renders prominent 64px tall tactile yellow action button
-                    <div className="relative">
-                      <motion.button
-                        key="checkin-ready"
-                        type="button"
-                        id="check-in-action-btn"
-                        onClick={handleCheckIn}
+                    <motion.div
+                      key="slider-checkin"
+                      className="relative h-16"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                    >
+                      <SlideAction 
+                        isCheckedIn={false}
+                        onAction={handleCheckIn}
                         disabled={!officeNetworkConnected}
-                        whileHover={officeNetworkConnected ? { scale: 1.02 } : {}}
-                        whileTap={officeNetworkConnected ? { scale: 0.98 } : {}}
-                        className={`w-full h-16 text-xl font-retro font-black uppercase tracking-wider rounded-2xl border select-none transition-all flex items-center justify-center gap-2 ${
-                          officeNetworkConnected 
-                            ? 'bg-[#EAFF00] hover:bg-[#DFFF00] text-black border-yellow-300 shadow-md cursor-pointer' 
-                            : 'bg-gray-100 text-gray-400 border-gray-200 opacity-50 cursor-not-allowed shadow-none'
-                        }`}
-                      >
-                        <span className="text-2xl">⚡</span>
-                        <span>Check In</span>
-                      </motion.button>
-                    </div>
+                      />
+                    </motion.div>
                   ) : (
-                    // 7. Success state: Change button to green and show Checked In with check-in time
-                    <div className="space-y-3">
-                      <motion.div
-                        key="checked-in-completed"
-                        id="checked-in-success-badge"
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="w-full h-16 rounded-2xl border border-emerald-250 bg-emerald-500 text-white flex flex-col items-center justify-center shadow-md select-none"
-                      >
-                        <div className="font-retro font-black uppercase text-lg tracking-widest flex items-center gap-1.5">
-                          <span>✓ Checked In</span>
-                        </div>
-                        <div className="text-xs font-mono font-bold bg-emerald-700/60 px-3 py-0.5 rounded-full mt-0.5 border border-emerald-950/20 flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-white fill-transparent opacity-90 animate-spin" style={{ animationDuration: '6s' }} />
-                          <span>{checkInTime || '09:12 AM'}</span>
-                        </div>
-                      </motion.div>
-
-                      {/* Clean, simple Checkout button directly beneath to keep layout functional, disabled if not on network */}
-                      <motion.button
-                        type="button"
-                        id="check-out-action-btn"
-                        onClick={handleCheckOut}
+                    <motion.div
+                      key="slider-checkout"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-4"
+                    >
+                      <SlideAction 
+                        isCheckedIn={true}
+                        onAction={handleCheckOut}
                         disabled={!officeNetworkConnected}
-                        whileHover={officeNetworkConnected ? { scale: 1.02 } : {}}
-                        whileTap={officeNetworkConnected ? { scale: 0.98 } : {}}
-                        className={`w-full py-2.5 text-xs font-retro font-black uppercase tracking-wider rounded-xl border transition-all cursor-pointer select-none ${
-                          officeNetworkConnected
-                            ? 'bg-rose-500 hover:bg-rose-600 border-rose-450 text-white shadow-sm'
-                            : 'bg-gray-100 text-gray-400 border-gray-250 opacity-40 cursor-not-allowed shadow-none'
-                        }`}
-                      >
-                        🚪 Check Out & End Duty
-                      </motion.button>
-                    </div>
+                      />
+                    </motion.div>
                   )}
                 </AnimatePresence>
-
-                {isCheckedIn && (
-                  <p className="text-[10px] text-center text-gray-500 font-bold uppercase font-retro tracking-wide flex items-center justify-center gap-1.5 py-1.5 mt-1">
-                    <span>🛡️ Guard duty active</span>
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        const statusReset = {
-                          ...userCheckInStatuses,
-                          [profile.name]: { isCheckedIn: false, time: null, checkInTimestamp: null }
-                        };
-                        setUserCheckInStatuses(statusReset);
-                        setSystemNotification('Guard state refreshed.');
-                        setTimeout(() => setSystemNotification(null), 2500);
-                      }}
-                      className="text-red-500 hover:underline hover:text-red-600 font-extrabold uppercase ml-1"
-                      title="Revoke active guard clock for mock retests"
-                    >
-                      (Reset Status)
-                    </button>
-                  </p>
-                )}
               </div>
 
             </div>
@@ -835,58 +773,15 @@ export default function App() {
 
               {/* Encryption/Gatekey verification info */}
               <div className="p-4 bg-white border border-gray-200 rounded-2xl shadow-sm">
-                <h3 className="text-xs font-retro font-black uppercase tracking-wide mb-2 flex items-center gap-1 text-slate-850">
-                  🔑 Verified Network Settings
-                </h3>
-                <div id="verified-network-requirements-list" className="space-y-2 text-xs font-sans text-gray-600 mb-3">
-                  <div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-xl border border-gray-150">
-                    <span className="font-semibold text-gray-500">Corporate WiFi:</span>
-                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200 text-slate-800 font-extrabold">🔒 Connected Subnet Required</span>
-                  </div>
-                  <div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-xl border border-gray-150">
-                    <span className="font-semibold text-gray-500">Authorization Domain:</span>
-                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200 text-slate-800 font-extrabold">📡 Secure Local Node Only</span>
-                  </div>
-                  <div className="flex justify-between items-center bg-[#EAFF00]/5 p-2 rounded-xl border border-[#EAFF00]/25">
-                    <span className="font-semibold text-gray-600">Verification Status:</span>
-                    <span className={`font-mono bg-white px-2 py-0.5 rounded border border-gray-200 font-black ${officeNetworkConnected ? 'text-emerald-700' : 'text-rose-650'}`}>
-                      {officeNetworkConnected ? '🟢 AUTHORIZED' : '🔴 RESTRICTED'}
-                    </span>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-retro font-bold uppercase text-gray-400">Database Status:</span>
+                  <span className="text-[10px] font-mono font-bold bg-teal-50 text-teal-600 px-1.5 py-0.5 rounded border border-teal-200">
+                    {supabaseStatusMsg}
+                  </span>
                 </div>
-
-                <div className="border-t border-black/10 pt-3 mt-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-retro font-bold uppercase text-gray-400">Database Status:</span>
-                    <span className="text-[10px] font-mono font-bold bg-teal-50 text-teal-600 px-1.5 py-0.5 rounded border border-teal-200">
-                      {supabaseStatusMsg}
-                    </span>
-                  </div>
-                  <p className="text-[9px] text-gray-400 italic mt-1 bg-gray-50 p-1.5 rounded border border-dashed text-center animate-fade-in">
-                    Auto-sends secure check-in records to active cloud databases when online.
-                  </p>
-                </div>
-
-                {/* Live Verification Debug result display */}
-                <div className="border-t border-black/10 pt-3 mt-3">
-                  <details className="group">
-                    <summary className="text-[10px] font-retro font-black uppercase text-gray-400 mb-1.5 flex items-center justify-between cursor-pointer select-none outline-none hover:text-gray-600 transition-colors">
-                      <span className="flex items-center gap-1">🛰️ Show Sentinel Diagnostic Stream</span>
-                      <span className="transition-transform group-open:rotate-90 text-[8px]">▶</span>
-                    </summary>
-                    <pre id="live-network-diagnostics-console" className="p-2.5 bg-gray-900 border border-gray-850 text-green-400 font-mono text-[9px] rounded-xl overflow-x-auto leading-relaxed shadow-inner max-h-[120px] overflow-y-auto whitespace-pre-wrap text-left mt-2">
-                      {networkDiagnostics || '[Network Sentinel Active - Requesting scan...]'}
-                    </pre>
-                  </details>
-                  <button
-                    type="button"
-                    onClick={runNetworkValidation}
-                    disabled={isValidatingNetwork}
-                    className="w-full mt-2.5 py-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-45 text-white font-retro font-bold uppercase rounded-lg text-[9px] tracking-wider transition-colors cursor-pointer text-center"
-                  >
-                    {isValidatingNetwork ? 'Scanning Interfaces...' : '🔄 Recalibrate Verification Protocol'}
-                  </button>
-                </div>
+                <p className="text-[9px] text-gray-400 italic mt-1 bg-gray-50 p-1.5 rounded border border-dashed text-center animate-fade-in">
+                  Auto-sends secure check-in records to active cloud databases when online.
+                </p>
               </div>
             </div>
           )}
