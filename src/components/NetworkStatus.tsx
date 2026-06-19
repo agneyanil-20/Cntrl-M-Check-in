@@ -1,43 +1,35 @@
 import React from 'react';
-import { Wifi, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, ShieldCheck } from 'lucide-react';
 
 interface NetworkStatusProps {
   isConnected: boolean;
-  onToggleSimulate: () => void;
   isCheckedIn: boolean;
 }
 
-export function NetworkStatus({ isConnected, onToggleSimulate, isCheckedIn }: NetworkStatusProps) {
+export function NetworkStatus({ isConnected, isCheckedIn }: NetworkStatusProps) {
   return (
     <div id="reusable-network-status" className="w-full text-center space-y-2 select-none animate-fade-in">
-      {/* Centered Chip Trigger Button */}
+      {/* Centered Chip Indicator */}
       <div className="flex justify-center">
-        <button
-          id="network-status-toggle-badge"
-          type="button"
-          onClick={onToggleSimulate}
-          title="Click to toggle simulated network location"
-          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+        <div
+          id="network-status-badge"
+          className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold border transition-all ${
             isConnected
-              ? 'bg-emerald-50 text-emerald-950 border-emerald-300'
-              : 'bg-rose-50 text-rose-950 border-rose-300'
+              ? 'bg-emerald-50 text-emerald-950 border-emerald-300 shadow-sm'
+              : 'bg-rose-50 text-rose-950 border-rose-300 shadow-sm'
           }`}
         >
           <span className="flex h-2.5 w-2.5 relative">
             {isConnected && (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-600 opacity-75"></span>
             )}
-            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isConnected ? 'bg-emerald-600' : 'bg-rose-650 animate-pulse'}`}></span>
+            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isConnected ? 'bg-emerald-600' : 'bg-rose-650'}`}></span>
           </span>
           
           <span className="font-retro uppercase tracking-wider text-[11px] font-black">
             {isConnected ? '🟢 Connected to Office Network' : '🔴 Not Connected to Office Network'}
           </span>
-          
-          <span className="text-[9px] font-bold underline opacity-60 hover:opacity-100 transition-opacity">
-            (Switch)
-          </span>
-        </button>
+        </div>
       </div>
 
       {/* Structured Helper text / Verification diagnostics */}

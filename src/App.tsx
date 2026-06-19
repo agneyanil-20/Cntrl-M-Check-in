@@ -604,21 +604,6 @@ export default function App() {
               <NetworkStatus 
                 isConnected={officeNetworkConnected}
                 isCheckedIn={isCheckedIn}
-                onToggleSimulate={() => {
-                  const nextConnected = !officeNetworkConnected;
-                  setOfficeNetworkConnected(nextConnected);
-                  if (nextConnected) {
-                    setNetworkSSID('CntrlM-5G');
-                    setNetworkGateway('192.168.29.1');
-                    setNetworkLocalIP('192.168.29.15');
-                    setNetworkMessage('Connected to Office Network');
-                  } else {
-                    setNetworkSSID('HomeNet-2.4G');
-                    setNetworkGateway('192.168.1.1');
-                    setNetworkLocalIP('192.168.1.23');
-                    setNetworkMessage('Not Connected to Office Network');
-                  }
-                }}
               />
 
               {/* 4 & 5. Check In Action Button (Height: 64px, Full Width, Bright Yellow, Sticky/Placed prominent) */}
@@ -793,53 +778,24 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Encryption/Gatekey simulation triggers */}
-              <div className="p-4 bg-white border-2 border-black rounded-2xl shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                <h3 className="text-xs font-retro font-black uppercase tracking-wide mb-2">
-                  🔑 Gate Key Overrides
+              {/* Encryption/Gatekey verification info */}
+              <div className="p-4 bg-white border border-gray-200 rounded-2xl shadow-sm">
+                <h3 className="text-xs font-retro font-black uppercase tracking-wide mb-2 flex items-center gap-1 text-slate-850">
+                  🔑 Verified Network Settings
                 </h3>
-                <label className="block text-[9px] font-black uppercase text-gray-400 mb-1.5">
-                  Location Authentication:
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOfficeNetworkConnected(true);
-                      setNetworkSSID('CntrlM-5G');
-                      setNetworkGateway('192.168.29.1');
-                      setNetworkLocalIP('192.168.29.15');
-                      setSystemNotification('🔑 Office network Gate Key activated.');
-                      setTimeout(() => setSystemNotification(null), 3500);
-                    }}
-                    className={`py-1.5 text-[10px] font-retro font-bold rounded-xl border-2 border-black flex flex-col items-center transition-all ${
-                      officeNetworkConnected 
-                        ? 'bg-emerald-50 text-emerald-950 font-black neo-shadow-sm' 
-                        : 'bg-gray-50 text-gray-400'
-                    }`}
-                  >
-                    <span className="uppercase">🏢 Office Mode</span>
-                    <span className="text-[8px] font-mono opacity-85">Simulated Office IP</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOfficeNetworkConnected(false);
-                      setNetworkSSID('HomeNet-2.4G');
-                      setNetworkGateway('192.168.1.1');
-                      setNetworkLocalIP('192.168.1.23');
-                      setSystemNotification('🔒 Outside Location Key set.');
-                      setTimeout(() => setSystemNotification(null), 3500);
-                    }}
-                    className={`py-1.5 text-[10px] font-retro font-bold rounded-xl border-2 border-black flex flex-col items-center transition-all ${
-                      !officeNetworkConnected 
-                        ? 'bg-red-50 text-red-950 font-black neo-shadow-sm' 
-                        : 'bg-gray-50 text-gray-400'
-                    }`}
-                  >
-                    <span className="uppercase">🏠 Outside Mode</span>
-                    <span className="text-[8px] font-mono opacity-85">Simulated Home IP</span>
-                  </button>
+                <div id="verified-network-requirements-list" className="space-y-2 text-xs font-sans text-gray-600 mb-3">
+                  <div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-xl border border-gray-150">
+                    <span className="font-semibold text-gray-500">Office SSID:</span>
+                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200 text-slate-800 font-black">CntrlM-5G</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-xl border border-gray-150">
+                    <span className="font-semibold text-gray-500">Router Gateway IP:</span>
+                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200 text-slate-800 font-black">192.168.29.1</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-[#EAFF00]/5 p-2 rounded-xl border border-[#EAFF00]/25">
+                    <span className="font-semibold text-gray-600">Allowed Network:</span>
+                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200 text-slate-700 font-bold">192.168.29.0/24</span>
+                  </div>
                 </div>
 
                 <div className="border-t border-black/10 pt-3 mt-3">
