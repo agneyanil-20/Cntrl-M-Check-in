@@ -191,6 +191,14 @@ export default function App() {
 
     window.addEventListener('online', triggerValidation);
     window.addEventListener('offline', triggerValidation);
+    window.addEventListener('focus', triggerValidation);
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        triggerValidation();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Network Information API (Varying device support, e.g. Android Chrome)
     const activeConnection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
@@ -200,23 +208,14 @@ export default function App() {
 
     // Gentle background polling interval (checks every 5 seconds for connectivity updates)
     const refreshCheckerInterval = setInterval(async () => {
-      try {
-        const res = await verifyActualOfficeNetwork();
-        // Quietly update if status or metadata has changed
-        setOfficeNetworkConnected(res.success);
-        setNetworkSSID(res.ssid);
-        setNetworkGateway(res.gatewayIp);
-        setNetworkLocalIP(res.localIp);
-        setNetworkDiagnostics(res.diagnostics);
-        setNetworkMessage(res.success ? 'Connected to Office Network' : 'Not Connected to Office Network');
-      } catch (err) {
-        // Safe fail
-      }
+      triggerValidation();
     }, 5000);
 
     return () => {
       window.removeEventListener('online', triggerValidation);
       window.removeEventListener('offline', triggerValidation);
+      window.removeEventListener('focus', triggerValidation);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (activeConnection) {
         activeConnection.removeEventListener('change', triggerValidation);
       }
@@ -651,7 +650,23 @@ export default function App() {
               </div>
 
               {/* 4 & 5. Check In Action Button (Height: 64px, Full Width, Bright Yellow, Sticky/Placed prominent) */}
-              <div id="check-in-control-section" className="w-full">
+              <div id="check-in-control-section" className="w-full space-y-4">
+                {/* Real-time Network Status Indicator */}
+                <div className="flex flex-col items-center justify-center gap-1 animate-fade-in">
+                  <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-retro font-black uppercase tracking-wider border transition-all ${
+                    officeNetworkConnected 
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                      : 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
+                  }`}>
+                    <span>{officeNetworkConnected ? '🟢 Office Network Verified' : '🔴 Office Network Not Detected'}</span>
+                  </div>
+                  {!officeNetworkConnected && (
+                    <p className="text-[10px] text-rose-600 font-bold uppercase tracking-tight text-center">
+                      Reconnect to office network to continue attendance.
+                    </p>
+                  )}
+                </div>
+
                 <AnimatePresence mode="wait">
                   {!isCheckedIn ? (
                     <motion.div
