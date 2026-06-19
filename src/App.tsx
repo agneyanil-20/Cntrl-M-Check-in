@@ -180,8 +180,48 @@ export default function App() {
     }
   };
 
+  // Set up network listeners and back-to-back automatic intervals to refresh wifi connection
   useEffect(() => {
+    // Initial scan on load
     runNetworkValidation();
+
+    const triggerValidation = () => {
+      runNetworkValidation();
+    };
+
+    window.addEventListener('online', triggerValidation);
+    window.addEventListener('offline', triggerValidation);
+
+    // Network Information API (Varying device support, e.g. Android Chrome)
+    const activeConnection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+    if (activeConnection) {
+      activeConnection.addEventListener('change', triggerValidation);
+    }
+
+    // Gentle background polling interval (checks every 5 seconds for connectivity updates)
+    const refreshCheckerInterval = setInterval(async () => {
+      try {
+        const res = await verifyActualOfficeNetwork();
+        // Quietly update if status or metadata has changed
+        setOfficeNetworkConnected(res.success);
+        setNetworkSSID(res.ssid);
+        setNetworkGateway(res.gatewayIp);
+        setNetworkLocalIP(res.localIp);
+        setNetworkDiagnostics(res.diagnostics);
+        setNetworkMessage(res.success ? 'Connected to Office Network' : 'Not Connected to Office Network');
+      } catch (err) {
+        // Safe fail
+      }
+    }, 5000);
+
+    return () => {
+      window.removeEventListener('online', triggerValidation);
+      window.removeEventListener('offline', triggerValidation);
+      if (activeConnection) {
+        activeConnection.removeEventListener('change', triggerValidation);
+      }
+      clearInterval(refreshCheckerInterval);
+    };
   }, []);
 
   useEffect(() => {
@@ -800,16 +840,18 @@ export default function App() {
                 </h3>
                 <div id="verified-network-requirements-list" className="space-y-2 text-xs font-sans text-gray-600 mb-3">
                   <div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-xl border border-gray-150">
-                    <span className="font-semibold text-gray-500">Office SSID:</span>
-                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200 text-slate-800 font-black">CntrlM-5G</span>
+                    <span className="font-semibold text-gray-500">Corporate WiFi:</span>
+                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200 text-slate-800 font-extrabold">🔒 Connected Subnet Required</span>
                   </div>
                   <div className="flex justify-between items-center bg-gray-50/50 p-2 rounded-xl border border-gray-150">
-                    <span className="font-semibold text-gray-500">Router Gateway IP:</span>
-                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200 text-slate-800 font-black">192.168.29.1</span>
+                    <span className="font-semibold text-gray-500">Authorization Domain:</span>
+                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200 text-slate-800 font-extrabold">📡 Secure Local Node Only</span>
                   </div>
                   <div className="flex justify-between items-center bg-[#EAFF00]/5 p-2 rounded-xl border border-[#EAFF00]/25">
-                    <span className="font-semibold text-gray-600">Allowed Network:</span>
-                    <span className="font-mono bg-white px-2 py-0.5 rounded border border-gray-200 text-slate-700 font-bold">192.168.29.0/24</span>
+                    <span className="font-semibold text-gray-600">Verification Status:</span>
+                    <span className={`font-mono bg-white px-2 py-0.5 rounded border border-gray-200 font-black ${officeNetworkConnected ? 'text-emerald-700' : 'text-rose-650'}`}>
+                      {officeNetworkConnected ? '🟢 AUTHORIZED' : '🔴 RESTRICTED'}
+                    </span>
                   </div>
                 </div>
 
@@ -820,19 +862,22 @@ export default function App() {
                       {supabaseStatusMsg}
                     </span>
                   </div>
-                  <p className="text-[9px] text-gray-400 italic mt-1 bg-gray-50 p-1.5 rounded border border-dashed text-center">
+                  <p className="text-[9px] text-gray-400 italic mt-1 bg-gray-50 p-1.5 rounded border border-dashed text-center animate-fade-in">
                     Auto-sends secure check-in records to active cloud databases when online.
                   </p>
                 </div>
 
                 {/* Live Verification Debug result display */}
                 <div className="border-t border-black/10 pt-3 mt-3">
-                  <h4 className="text-[10px] font-retro font-black uppercase text-gray-400 mb-1.5 flex items-center gap-1">
-                    🛰️ Network Sentinel Diagnostic Stream
-                  </h4>
-                  <pre id="live-network-diagnostics-console" className="p-2.5 bg-gray-900 border border-gray-850 text-green-400 font-mono text-[9px] rounded-xl overflow-x-auto leading-relaxed shadow-inner max-h-[120px] overflow-y-auto whitespace-pre-wrap text-left">
-                    {networkDiagnostics || '[Network Sentinel Active - Requesting scan...]'}
-                  </pre>
+                  <details className="group">
+                    <summary className="text-[10px] font-retro font-black uppercase text-gray-400 mb-1.5 flex items-center justify-between cursor-pointer select-none outline-none hover:text-gray-600 transition-colors">
+                      <span className="flex items-center gap-1">🛰️ Show Sentinel Diagnostic Stream</span>
+                      <span className="transition-transform group-open:rotate-90 text-[8px]">▶</span>
+                    </summary>
+                    <pre id="live-network-diagnostics-console" className="p-2.5 bg-gray-900 border border-gray-850 text-green-400 font-mono text-[9px] rounded-xl overflow-x-auto leading-relaxed shadow-inner max-h-[120px] overflow-y-auto whitespace-pre-wrap text-left mt-2">
+                      {networkDiagnostics || '[Network Sentinel Active - Requesting scan...]'}
+                    </pre>
+                  </details>
                   <button
                     type="button"
                     onClick={runNetworkValidation}
@@ -920,9 +965,8 @@ export default function App() {
                   "Check-in is restricted to employees connected to the office network."
                 </p>
                 <div className="bg-red-50 text-[10px] font-mono p-2 rounded-lg border border-red-200 text-left space-y-1 text-red-950 mb-4">
-                  <div>🛰️ SSID: <strong className="text-black font-extrabold">CntrlM-5G</strong></div>
-                  <div>🚪 Gateway: <strong className="text-black font-extrabold">192.168.29.1</strong></div>
-                  <div>🛡️ Allowed range: <strong className="text-black font-extrabold">192.168.29.*</strong></div>
+                  <div>🏢 Secure Wifi: <strong className="text-black font-extrabold animate-pulse">Required Network Node</strong></div>
+                  <div>🛡️ Required Area: <strong className="text-black font-extrabold">Office Premises</strong></div>
                 </div>
                 <button
                   type="button"

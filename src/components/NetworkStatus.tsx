@@ -61,28 +61,6 @@ export function NetworkStatus({
         )}
       </div>
 
-      {/* Real telemetry readout */}
-      <div className="text-[10px] font-mono grid grid-cols-3 gap-1.5 p-2 bg-white rounded-xl border border-gray-150">
-        <div className="text-center animate-fade-in">
-          <div className="text-gray-400 font-bold uppercase text-[8px]">SSID Detected</div>
-          <div className={`font-black truncate ${isConnected && ssid === 'CntrlM-5G' ? 'text-emerald-700 font-extrabold' : 'text-gray-600'}`}>
-            {ssid}
-          </div>
-        </div>
-        <div className="text-center border-x border-gray-100 animate-fade-in">
-          <div className="text-gray-400 font-bold uppercase text-[8px]">Subnet Gateway</div>
-          <div className={`font-black truncate ${isConnected && gatewayIp === '192.168.29.1' ? 'text-emerald-700 font-extrabold' : 'text-gray-600'}`}>
-            {gatewayIp}
-          </div>
-        </div>
-        <div className="text-center animate-fade-in">
-          <div className="text-gray-400 font-bold uppercase text-[8px]">Local Address</div>
-          <div className={`font-black truncate ${isConnected && localIp.startsWith('192.168.29.') ? 'text-emerald-700 font-extrabold' : 'text-gray-600'}`}>
-            {localIp}
-          </div>
-        </div>
-      </div>
-
       {/* Structured Helper text / Verification diagnostics */}
       <div className="min-h-[20px] flex items-center justify-center">
         {isValidating ? (
@@ -91,15 +69,15 @@ export function NetworkStatus({
           </p>
         ) : !isConnected ? (
           <div className="space-y-1 text-center">
-            <p className="text-xs text-rose-600 font-semibold flex items-center justify-center gap-1.5">
+            <p className="text-xs text-rose-600 font-semibold flex items-center justify-center gap-1.5 animate-pulse">
               <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-              <span>Please connect to the office WiFi "CntrlM-5G" to verify identity.</span>
+              <span>Please connect to the corporate office WiFi to verify security context.</span>
             </p>
           </div>
         ) : (
-          <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider font-mono flex items-center justify-center gap-1 animate-bounce">
+          <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider font-mono flex items-center justify-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 fill-transparent" />
-            <span>Secure 192.168.29.0/24 subnet validated!</span>
+            <span>Secure enterprise subnet validated!</span>
           </p>
         )}
       </div>
