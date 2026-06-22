@@ -5,25 +5,31 @@ let supabaseInstance: SupabaseClient | null = null;
 export function getSupabase(): SupabaseClient | null {
   if (supabaseInstance) return supabaseInstance;
 
-  // Hardcoded for testing as requested
-  const hardcodedUrl = 'https://xakwkvsdqkcarxfrltzh.supabase.co';
-  const url = import.meta.env.VITE_SUPABASE_URL && !import.meta.env.VITE_SUPABASE_URL.includes('YOUR_') 
-    ? import.meta.env.VITE_SUPABASE_URL 
-    : hardcodedUrl;
-  
+  const url = import.meta.env.VITE_SUPABASE_URL;
   const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  if (!url || !key || key.includes('YOUR_')) {
-    console.warn('Supabase: Missing key or using placeholders.');
-    // In test mode, we might want to return null but the auth component should handle it
+  console.log('--- Supabase Diagnostic Start ---');
+  console.log('VITE_SUPABASE_URL:', url);
+  console.log('VITE_SUPABASE_ANON_KEY:', key ? `Detected (${key.length} chars)` : 'Missing');
+
+  const hardcodedUrl = 'https://xakwkvsdqkcarxfrltzh.supabase.co';
+  const activeUrl = url && !url.includes('YOUR_') ? url : hardcodedUrl;
+
+  if (!activeUrl || !key || key.includes('YOUR_')) {
+    console.warn('Supabase: Configuration is incomplete. Missing URL or Key.');
     return null;
   }
 
   try {
-    supabaseInstance = createClient(url.trim(), key.trim());
+    console.log('Attempting createClient with URL:', activeUrl);
+    supabaseInstance = createClient(activeUrl.trim(), key.trim());
+    console.log('Supabase client created successfully.');
+    console.log('--- Supabase Diagnostic End ---');
     return supabaseInstance;
   } catch (error) {
-    console.error('Supabase Init Error:', error);
+    console.error('CRITICAL: Supabase createClient failed!');
+    console.error('Error Details:', error);
+    console.log('--- Supabase Diagnostic End ---');
     return null;
   }
 }
