@@ -11,23 +11,15 @@ interface SupabaseAuthProps {
 export function SupabaseAuth({ onSuccess }: SupabaseAuthProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isConfigured, setIsConfigured] = useState(true);
-
-  useEffect(() => {
-    const supabase = getSupabase();
-    if (!supabase) {
-      setIsConfigured(false);
-    }
-  }, []);
 
   const handleLogin = async () => {
-    if (!isConfigured) {
-      setError('System offline: Please provide Supabase credentials in the environment settings to enable authentication.');
-      return;
-    }
     setIsLoading(true);
     setError(null);
     try {
+      const supabase = getSupabase();
+      if (!supabase) {
+        throw new Error('Supabase client failed to initialize. Please check the VITE_SUPABASE_ANON_KEY in project settings.');
+      }
       const { error } = await dbService.signInWithGoogle();
       if (error) throw error;
     } catch (err: any) {
@@ -48,16 +40,6 @@ export function SupabaseAuth({ onSuccess }: SupabaseAuthProps) {
             <ShieldCheck className="w-10 h-10 text-black" />
           </div>
         </div>
-
-        {!isConfigured && (
-          <div className="mb-8 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex flex-col items-center gap-3 text-center">
-            <Settings className="w-6 h-6 text-amber-500 animate-spin-slow" />
-            <div>
-              <p className="text-[11px] font-retro font-black uppercase text-amber-900 mb-1">Configuration Needed</p>
-              <p className="text-[10px] text-amber-700 font-bold leading-tight">Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your project settings to activate this terminal.</p>
-            </div>
-          </div>
-        )}
 
         <h2 className="text-2xl font-retro font-black uppercase tracking-tight text-gray-900 mb-2">
           Terminal Access
@@ -82,7 +64,7 @@ export function SupabaseAuth({ onSuccess }: SupabaseAuthProps) {
           disabled={isLoading}
           className={`w-full h-14 bg-black text-white rounded-2xl flex items-center justify-center gap-3 font-retro font-black uppercase tracking-widest transition-all ${
             isLoading ? 'opacity-50 cursor-wait' : 'hover:bg-gray-900 active:scale-95'
-          } ${!isConfigured ? 'opacity-30' : ''}`}
+          }`}
         >
           {isLoading ? (
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
