@@ -5,19 +5,33 @@ let supabaseInstance: SupabaseClient | null = null;
 export function getSupabase(): SupabaseClient | null {
   if (supabaseInstance) return supabaseInstance;
 
-  const url = import.meta.env.VITE_SUPABASE_URL;
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  let url = import.meta.env.VITE_SUPABASE_URL;
+  let key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  // Check if variables are missing or contain placeholders
+  // Cleanup helper: trim whitespace and remove potential surrounding quotes
+  const clean = (val: any) => {
+    if (typeof val !== 'string') return '';
+    const trimmed = val.trim();
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      return trimmed.slice(1, -1).trim();
+    }
+    return trimmed;
+  };
+
+  url = clean(url);
+  key = clean(key);
+
   const isMissing = !url || !key;
-  const isPlaceholder = url === 'YOUR_SUPABASE_URL' || key === 'YOUR_SUPABASE_ANON_KEY';
+  const isPlaceholder = url === 'YOUR_SUPABASE_URL' || key === 'YOUR_SUPABASE_ANON_KEY' || url === 'MY_SUPABASE_URL';
   const isInvalidUrl = !isMissing && !isPlaceholder && !url.startsWith('http');
 
   if (isMissing || isPlaceholder || isInvalidUrl) {
-    if (isInvalidUrl) {
-      console.warn('VITE_SUPABASE_URL is not a valid URL. It must start with http:// or https://');
-    } else {
-      console.warn('Supabase configuration is missing or using placeholders. Please check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your settings.');
+    if (isMissing) {
+      console.warn('Supabase: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is missing from environment.');
+    } else if (isPlaceholder) {
+      console.warn(`Supabase: Placeholder detected for ${url === 'YOUR_SUPABASE_URL' ? 'URL' : 'Key'}. Please update your settings.`);
+    } else if (isInvalidUrl) {
+      console.warn('Supabase: VITE_SUPABASE_URL is invalid (must start with http:// or https://). Current value starts with:', url.slice(0, 5));
     }
     return null;
   }
