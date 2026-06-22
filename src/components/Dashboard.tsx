@@ -132,14 +132,14 @@ export default function Dashboard({ employeeProfile, todayAttendance, onNavigate
                 </div>
                 <div>
                   <p className="text-[10px] font-retro font-black uppercase text-gray-400 text-black">Pending Expenses</p>
-                  <p className="text-sm font-bold text-gray-900">${recentExpenses.filter(e => e.status === 'pending').reduce((acc, curr) => acc + Number(curr.amount), 0).toFixed(2)}</p>
+                  <p className="text-sm font-bold text-gray-900">₹{recentExpenses.filter(e => e.status === 'pending').reduce((acc, curr) => acc + Number(curr.amount), 0).toFixed(2)}</p>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="mt-8 pt-6 border-t border-gray-50 flex gap-2">
-            <span className="px-3 py-1 bg-gray-100 rounded-full text-[9px] font-black uppercase text-gray-500 tracking-tighter">System ID: {employeeProfile.id.slice(0, 8)}</span>
+            <span className="px-3 py-1 bg-gray-100 rounded-full text-[9px] font-black uppercase text-gray-400 tracking-tighter">System ID: {employeeProfile.id.slice(0, 8)}</span>
             <span className="px-3 py-1 bg-[#EAFF00]/10 rounded-full text-[9px] font-black uppercase text-[#EAFF00] tracking-tighter brightness-75">Level: {employeeProfile.role}</span>
           </div>
         </div>
@@ -174,12 +174,12 @@ export default function Dashboard({ employeeProfile, todayAttendance, onNavigate
                     <Receipt className="w-5 h-5 text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-900 line-clamp-1">{expense.description}</p>
+                    <p className="text-xs font-bold text-gray-900 line-clamp-1">{expense.merchant_name}</p>
                     <p className="text-[9px] font-mono font-bold text-gray-400 uppercase">{new Date(expense.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1.5">
-                  <span className="text-sm font-mono font-black text-gray-900">${Number(expense.amount).toFixed(2)}</span>
+                  <span className="text-sm font-mono font-black text-gray-900">₹{Number(expense.amount).toFixed(2)}</span>
                   <span className={`text-[8px] font-retro font-black uppercase px-2 py-0.5 rounded-full border ${getStatusColor(expense.status)}`}>
                     {expense.status}
                   </span>

@@ -110,7 +110,10 @@ export default function App() {
     setSession(session);
     if (session?.user) {
       const email = session.user.email || '';
-      if (email.endsWith('@cntrlm.com')) {
+      // Allow @cntrlm.com OR the specific developer email for testing
+      const isAuthorized = email.endsWith('@cntrlm.com') || email === 'agney.0.anil.1.com@gmail.com';
+      
+      if (isAuthorized) {
         setRestrictedUser(false);
         try {
           let profile = await dbService.getEmployeeProfile(email);
@@ -118,13 +121,14 @@ export default function App() {
             profile = await dbService.createEmployeeProfile({
               email,
               full_name: session.user.user_metadata.full_name || email.split('@')[0],
-              role: 'employee',
+              role: email === 'agney.0.anil.1.com@gmail.com' ? 'admin' : 'employee', // Auto-admin for developer
             });
           }
           setEmployeeProfile(profile);
           fetchAttendance(profile.id);
         } catch (error) {
           console.error('Profile fetch error:', error);
+          setSystemNotification('System Error: Profile binding failed.');
         }
       } else {
         setRestrictedUser(true);
@@ -162,12 +166,20 @@ export default function App() {
     setIsValidatingNetwork(true);
     try {
       const res = await verifyActualOfficeNetwork();
+      
+      // Developer bypass
+      if (session?.user?.email === 'agney.0.anil.1.com@gmail.com') {
+        setOfficeNetworkConnected(true);
+        setNetworkMessage('Developer Override: Connected');
+      } else {
+        setOfficeNetworkConnected(res.success);
+        setNetworkMessage(res.success ? 'Connected to Office Network' : 'Not Connected to Office Network');
+      }
+
       setNetworkSSID(res.ssid);
       setNetworkGateway(res.gatewayIp);
       setNetworkLocalIP(res.localIp);
-      setOfficeNetworkConnected(res.success);
       setNetworkDiagnostics(res.diagnostics);
-      setNetworkMessage(res.success ? 'Connected to Office Network' : 'Not Connected to Office Network');
     } catch (err) {
       setOfficeNetworkConnected(false);
     } finally {
