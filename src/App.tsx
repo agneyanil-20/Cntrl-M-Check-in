@@ -43,8 +43,10 @@ import {
   LogOut,
   LayoutDashboard,
   Loader2,
-  XCircle
+  XCircle,
+  Activity
 } from 'lucide-react';
+import HealthCheck from './components/HealthCheck';
 import { motion, AnimatePresence } from 'motion/react';
 
 type EmployeeProfile = Database['public']['Tables']['employees']['Row'];
@@ -75,7 +77,7 @@ export default function App() {
   const [checkInTimeFormatted, setCheckInTimeFormatted] = useState<string | null>(null);
 
   // UI state controls
-  const [activePage, setActivePage] = useState<'punch' | 'expenses' | 'ledger' | 'admin'>('punch');
+  const [activePage, setActivePage] = useState<'punch' | 'expenses' | 'ledger' | 'admin' | 'health'>('punch');
   const [isExploding, setIsExploding] = useState(false);
   const [systemNotification, setSystemNotification] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -298,6 +300,8 @@ export default function App() {
       <main className="max-w-screen-md mx-auto px-4 pt-6 space-y-6">
         {activePage === 'admin' ? (
           <AdminDashboard />
+        ) : activePage === 'health' ? (
+          <HealthCheck />
         ) : activePage === 'expenses' ? (
           <ExpenseManager employeeId={employeeProfile.id} />
         ) : (
@@ -356,6 +360,11 @@ export default function App() {
           activePage === 'expenses' ? 'bg-[#EAFF00] text-black font-retro font-black text-xs uppercase' : 'text-gray-400 font-bold text-xs uppercase'
         }`}>
           <Receipt className="w-5 h-5" /> {activePage === 'expenses' && <span>Expenses</span>}
+        </button>
+        <button onClick={() => setActivePage('health')} className={`flex items-center gap-3 px-6 h-11 rounded-full transition-all ${
+          activePage === 'health' ? 'bg-[#EAFF00] text-black font-retro font-black text-xs uppercase' : 'text-gray-400 font-bold text-xs uppercase'
+        }`}>
+          <Activity className="w-5 h-5" /> {activePage === 'health' && <span>Health</span>}
         </button>
       </nav>
 
