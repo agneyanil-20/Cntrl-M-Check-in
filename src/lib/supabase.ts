@@ -1,35 +1,41 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let supabaseInstance: SupabaseClient | null = null;
+let lastInitError: string | null = null;
+
+export const getSupabaseConfig = () => {
+  const url = import.meta.env.VITE_SUPABASE_URL || '';
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+  const hardcodedUrl = 'https://xakwkvsdqkcarxfrltzh.supabase.co';
+  const activeUrl = url && !url.includes('YOUR_') ? url : hardcodedUrl;
+  
+  return {
+    url: activeUrl,
+    envUrl: url,
+    hasKey: !!key && !key.includes('YOUR_'),
+    isHardcoded: !url || url.includes('YOUR_'),
+    lastError: lastInitError
+  };
+};
 
 export function getSupabase(): SupabaseClient | null {
   if (supabaseInstance) return supabaseInstance;
 
-  const url = import.meta.env.VITE_SUPABASE_URL;
+  const config = getSupabaseConfig();
   const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-  console.log('--- Supabase Diagnostic Start ---');
-  console.log('VITE_SUPABASE_URL:', url);
-  console.log('VITE_SUPABASE_ANON_KEY:', key ? `Detected (${key.length} chars)` : 'Missing');
-
-  const hardcodedUrl = 'https://xakwkvsdqkcarxfrltzh.supabase.co';
-  const activeUrl = url && !url.includes('YOUR_') ? url : hardcodedUrl;
-
-  if (!activeUrl || !key || key.includes('YOUR_')) {
-    console.warn('Supabase: Configuration is incomplete. Missing URL or Key.');
+  if (!config.url || !config.hasKey) {
+    lastInitError = 'Configuration Incomplete: URL or Anon Key is missing or using placeholder values.';
     return null;
   }
 
   try {
-    console.log('Attempting createClient with URL:', activeUrl);
-    supabaseInstance = createClient(activeUrl.trim(), key.trim());
-    console.log('Supabase client created successfully.');
-    console.log('--- Supabase Diagnostic End ---');
+    supabaseInstance = createClient(config.url.trim(), key!.trim());
+    lastInitError = null;
     return supabaseInstance;
-  } catch (error) {
-    console.error('CRITICAL: Supabase createClient failed!');
-    console.error('Error Details:', error);
-    console.log('--- Supabase Diagnostic End ---');
+  } catch (error: any) {
+    lastInitError = error?.message || String(error);
+    console.error('Supabase Init Error:', error);
     return null;
   }
 }

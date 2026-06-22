@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { LogIn, ShieldCheck, Mail, AlertCircle, Settings } from 'lucide-react';
 import { dbService } from '../lib/database.service';
-import { getSupabase } from '../lib/supabase';
+import { getSupabase, getSupabaseConfig } from '../lib/supabase';
 
 interface SupabaseAuthProps {
   onSuccess?: () => void;
@@ -18,7 +18,8 @@ export function SupabaseAuth({ onSuccess }: SupabaseAuthProps) {
     try {
       const supabase = getSupabase();
       if (!supabase) {
-        throw new Error('Supabase client failed to initialize. Please check the VITE_SUPABASE_ANON_KEY in project settings.');
+        const config = getSupabaseConfig();
+        throw new Error(config.lastError || 'Supabase client failed to initialize. Check your configuration in Project Settings.');
       }
       const { error } = await dbService.signInWithGoogle();
       if (error) throw error;

@@ -11,9 +11,11 @@ import {
   RefreshCw,
   Clock,
   Terminal,
-  ShieldCheck
+  ShieldCheck,
+  Globe,
+  Key
 } from 'lucide-react';
-import { getSupabase } from '../lib/supabase';
+import { getSupabase, getSupabaseConfig } from '../lib/supabase';
 
 export default function HealthCheck() {
   const [status, setStatus] = useState<{
@@ -26,6 +28,7 @@ export default function HealthCheck() {
     };
     errors: string[];
     lastChecked: string | null;
+    config: ReturnType<typeof getSupabaseConfig>;
   }>({
     connected: 'loading',
     auth: 'loading',
@@ -35,16 +38,19 @@ export default function HealthCheck() {
       expenses: 'loading'
     },
     errors: [],
-    lastChecked: null
+    lastChecked: null,
+    config: getSupabaseConfig()
   });
 
   const checkConnectivity = async () => {
+    const config = getSupabaseConfig();
     setStatus(prev => ({ 
       ...prev, 
       connected: 'loading', 
       auth: 'loading', 
       tables: { employees: 'loading', attendance: 'loading', expenses: 'loading' }, 
-      errors: [] 
+      errors: [],
+      config
     }));
     
     const errors: string[] = [];
@@ -53,12 +59,14 @@ export default function HealthCheck() {
 
     const supabase = getSupabase();
     if (!supabase) {
+      const config = getSupabaseConfig();
       setStatus(prev => ({ 
         ...prev, 
         connected: false, 
         auth: false, 
         tables: { employees: 'missing', attendance: 'missing', expenses: 'missing' },
-        errors: ['Supabase client failed to initialize. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.']
+        errors: [config.lastError || 'Supabase client failed to initialize.'],
+        config
       }));
       return;
     }
@@ -133,6 +141,47 @@ export default function HealthCheck() {
       </div>
 
       <div className="grid gap-4">
+        {/* System Config */}
+        <div className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
+              <Globe className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <h3 className="text-xs font-retro font-black uppercase text-gray-900 leading-none">Runtime Configuration</h3>
+              <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">Environment Variable Mapping</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-retro font-black uppercase text-gray-400">Endpoint URL</span>
+                {status.config.isHardcoded && (
+                  <span className="px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 rounded-full text-[8px] font-black italic">HARDCODED TEST URL</span>
+                )}
+              </div>
+              <p className="text-xs font-mono font-bold text-gray-700 break-all">{status.config.url}</p>
+              <p className="text-[8px] font-mono text-gray-400 mt-1 uppercase">Source: {status.config.isHardcoded ? 'Fallback Service' : 'VITE_SUPABASE_URL'}</p>
+            </div>
+
+            <div className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${status.config.hasKey ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                  <Key className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-retro font-black uppercase text-gray-900 leading-none">Anon Key Presence</p>
+                  <p className="text-[9px] font-bold text-gray-400 uppercase mt-1">VITE_SUPABASE_ANON_KEY</p>
+                </div>
+              </div>
+              <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${status.config.hasKey ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                {status.config.hasKey ? 'DETECTED' : 'MISSING'}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Core Connections */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-3">
