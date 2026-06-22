@@ -14,6 +14,9 @@ import ExpenseManager from './components/ExpenseManager';
 import AdminDashboard from './components/AdminDashboard';
 import { Session, User as AuthUser } from '@supabase/supabase-js';
 import { Database } from './types/database';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
+import AttendanceSection from './components/AttendanceSection';
 import { 
   ShieldAlert, 
   Settings, 
@@ -44,7 +47,8 @@ import {
   LayoutDashboard,
   Loader2,
   XCircle,
-  Activity
+  Activity,
+  Menu
 } from 'lucide-react';
 import HealthCheck from './components/HealthCheck';
 import { motion, AnimatePresence } from 'motion/react';
@@ -77,10 +81,11 @@ export default function App() {
   const [checkInTimeFormatted, setCheckInTimeFormatted] = useState<string | null>(null);
 
   // UI state controls
-  const [activePage, setActivePage] = useState<'punch' | 'expenses' | 'ledger' | 'admin' | 'health'>('punch');
+  const [activePage, setActivePage] = useState<'dashboard' | 'attendance' | 'expenses' | 'admin' | 'health'>('dashboard');
   const [isExploding, setIsExploding] = useState(false);
   const [systemNotification, setSystemNotification] = useState<string | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Auth Listener
   useEffect(() => {
@@ -263,114 +268,109 @@ export default function App() {
   }
 
   return (
-    <div className="relative min-h-screen pb-24 bg-gray-50 text-slate-850 overflow-x-hidden">
-      <header className={`sticky top-0 z-40 transition-all duration-300 backdrop-blur-md border-b-[3px] ${
-        activePage === 'punch' ? 'bg-[#EAFF00]/95 border-black/90' : 'bg-white/90 border-gray-100 text-black'
-      }`}>
-        <div className="max-w-screen-md mx-auto px-5 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className={`p-1.5 rounded-xl border-2 transition-colors ${
-              activePage === 'punch' ? 'bg-black text-[#EAFF00] border-black' : 'bg-gray-100 text-gray-600 border-gray-200'
-            }`}>
-              <ShieldAlert className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-lg font-retro font-black uppercase leading-none tracking-tight">Sentry</h1>
-              <p className="text-[8px] font-mono font-black uppercase opacity-60 mt-0.5 tracking-[0.2em]">{employeeProfile.role}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {employeeProfile.role === 'admin' && (
-              <button
-                onClick={() => setActivePage(activePage === 'admin' ? 'punch' : 'admin')}
-                className={`p-2.5 rounded-xl border transition-all ${
-                  activePage === 'admin' ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-400 hover:text-black'
-                }`}
-              >
-                <LayoutDashboard className="w-5 h-5" />
-              </button>
-            )}
-            <button onClick={handleSignOut} className="p-2.5 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-rose-500 transition-all">
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="flex min-h-screen bg-gray-50 text-slate-900 overflow-x-hidden">
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:block w-72 sticky top-0 h-screen overflow-y-auto">
+        <Sidebar 
+          activePage={activePage} 
+          onNavigate={setActivePage} 
+          isAdmin={employeeProfile.role === 'admin'} 
+          onSignOut={handleSignOut}
+          employeeName={employeeProfile.full_name}
+        />
+      </aside>
 
-      <main className="max-w-screen-md mx-auto px-4 pt-6 space-y-6">
-        {activePage === 'admin' ? (
-          <AdminDashboard />
-        ) : activePage === 'health' ? (
-          <HealthCheck />
-        ) : activePage === 'expenses' ? (
-          <ExpenseManager employeeId={employeeProfile.id} />
-        ) : (
+      {/* Mobile Sidebar Overlay */}
+      <AnimatePresence>
+        {isSidebarOpen && (
           <>
-            <div className="flex flex-col items-center justify-center gap-1 animate-fade-in">
-              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-retro font-black uppercase tracking-wider border transition-all ${
-                officeNetworkConnected ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
-              }`}>
-                <span>{officeNetworkConnected ? '🟢 Office Network Verified' : '🔴 Office Network Not Detected'}</span>
-              </div>
-              {!officeNetworkConnected && (
-                <p className="text-[10px] text-rose-600 font-bold uppercase tracking-tight text-center">
-                  Reconnect to office network to continue attendance.
-                </p>
-              )}
-            </div>
-
-            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="bg-black text-white rounded-[32px] p-8 min-h-[220px] shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8">
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }} className="text-4xl opacity-20">{greeting.icon}</motion.div>
-              </div>
-              <h2 className="text-sm font-retro font-black uppercase tracking-[0.2em] text-[#EAFF00] mb-2">{greeting.text}</h2>
-              <h3 className="text-3xl font-retro font-black uppercase leading-tight tracking-tight max-w-[240px]">{employeeProfile.full_name}</h3>
-              <div className="mt-8 flex items-end justify-between">
-                <div className="text-4xl font-mono font-black tracking-tighter flex items-center gap-2">
-                  <Clock className="w-6 h-6 text-[#EAFF00]" />
-                  <span>{timeStr.split(':').slice(0, 2).join(':')}</span>
-                  <span className="text-sm opacity-50 font-retro uppercase tracking-widest">{timeStr.split(' ')[1]}</span>
-                </div>
-              </div>
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSidebarOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[50] md:hidden"
+            />
+            <motion.div 
+              initial={{ x: -280 }} 
+              animate={{ x: 0 }} 
+              exit={{ x: -280 }}
+              className="fixed inset-y-0 left-0 w-72 z-[51] md:hidden"
+            >
+              <Sidebar 
+                activePage={activePage} 
+                onNavigate={setActivePage} 
+                isAdmin={employeeProfile.role === 'admin'} 
+                onSignOut={handleSignOut}
+                onClose={() => setIsSidebarOpen(false)}
+                employeeName={employeeProfile.full_name}
+              />
             </motion.div>
-
-            <div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 flex flex-col gap-6">
-              <div className="flex items-center justify-between px-2">
-                <h3 className="text-xs font-retro font-black uppercase text-gray-900 tracking-widest">Attendance Status</h3>
-                {isCheckedIn && (
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100 text-[10px] font-mono font-bold">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    {checkInTimeFormatted}
-                  </div>
-                )}
-              </div>
-              <SlideAction isCheckedIn={isCheckedIn} onAction={isCheckedIn ? handleCheckOut : handleCheckIn} disabled={!officeNetworkConnected} />
-            </div>
           </>
         )}
-      </main>
+      </AnimatePresence>
 
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-black/90 backdrop-blur-xl border border-white/10 rounded-full h-16 w-max px-2.5 flex items-center gap-2 shadow-2xl">
-        <button onClick={() => setActivePage('punch')} className={`flex items-center gap-3 px-6 h-11 rounded-full transition-all ${
-          activePage === 'punch' ? 'bg-[#EAFF00] text-black font-retro font-black text-xs uppercase' : 'text-gray-400 font-bold text-xs uppercase'
-        }`}>
-          <Clock className="w-5 h-5" /> {activePage === 'punch' && <span>Punch</span>}
-        </button>
-        <button onClick={() => setActivePage('expenses')} className={`flex items-center gap-3 px-6 h-11 rounded-full transition-all ${
-          activePage === 'expenses' ? 'bg-[#EAFF00] text-black font-retro font-black text-xs uppercase' : 'text-gray-400 font-bold text-xs uppercase'
-        }`}>
-          <Receipt className="w-5 h-5" /> {activePage === 'expenses' && <span>Expenses</span>}
-        </button>
-        <button onClick={() => setActivePage('health')} className={`flex items-center gap-3 px-6 h-11 rounded-full transition-all ${
-          activePage === 'health' ? 'bg-[#EAFF00] text-black font-retro font-black text-xs uppercase' : 'text-gray-400 font-bold text-xs uppercase'
-        }`}>
-          <Activity className="w-5 h-5" /> {activePage === 'health' && <span>Health</span>}
-        </button>
-      </nav>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100 h-20 px-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden p-2 rounded-xl border border-gray-200 text-gray-500 hover:text-black hover:bg-gray-50 transition-all"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="text-xl font-retro font-black uppercase tracking-tight text-gray-900 capitalize">
+              {activePage === 'dashboard' ? 'Overview' : activePage}
+            </h1>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex flex-col items-end">
+              <span className="text-[10px] font-retro font-black uppercase text-gray-400 leading-none">Local Time</span>
+              <span className="text-sm font-mono font-black text-gray-900">{timeStr}</span>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-[#EAFF00] border-2 border-black flex items-center justify-center font-retro font-black uppercase text-xs shadow-sm">
+              {employeeProfile.full_name.charAt(0)}
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-6 md:p-10 max-w-screen-xl mx-auto w-full">
+          {activePage === 'admin' ? (
+            <AdminDashboard />
+          ) : activePage === 'health' ? (
+            <HealthCheck />
+          ) : activePage === 'attendance' ? (
+            <AttendanceSection 
+              employeeProfile={employeeProfile}
+              todayAttendance={todayAttendance}
+              isCheckedIn={isCheckedIn}
+              checkInTimeFormatted={checkInTimeFormatted}
+              officeNetworkConnected={officeNetworkConnected}
+              onCheckIn={handleCheckIn}
+              onCheckOut={handleCheckOut}
+            />
+          ) : activePage === 'expenses' ? (
+            <ExpenseManager employeeId={employeeProfile.id} />
+          ) : (
+            <Dashboard 
+              employeeProfile={employeeProfile} 
+              todayAttendance={todayAttendance}
+              onNavigate={setActivePage}
+            />
+          )}
+        </main>
+      </div>
 
       <AnimatePresence>
         {systemNotification && (
-          <motion.div initial={{ y: -50, opacity: 0 }} animate={{ y: 20, opacity: 1 }} exit={{ y: -50, opacity: 0 }} className="fixed top-0 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-sm px-5 py-4 bg-black text-[#EAFF00] rounded-2xl shadow-2xl border border-[#EAFF00]/20 flex items-center gap-4 text-xs font-retro font-black uppercase tracking-wide">
+          <motion.div 
+            initial={{ y: -50, opacity: 0 }} 
+            animate={{ y: 20, opacity: 1 }} 
+            exit={{ y: -50, opacity: 0 }} 
+            className="fixed top-0 left-1/2 -translate-x-1/2 z-[60] w-[90%] max-w-sm px-5 py-4 bg-black text-[#EAFF00] rounded-2xl shadow-2xl border border-[#EAFF00]/20 flex items-center gap-4 text-xs font-retro font-black uppercase tracking-wide"
+          >
             <ShieldAlert className="w-5 h-5" />
             <span>{systemNotification}</span>
           </motion.div>
