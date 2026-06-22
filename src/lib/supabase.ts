@@ -5,18 +5,19 @@ let supabaseInstance: SupabaseClient | null = null;
 export function getSupabase(): SupabaseClient | null {
   if (supabaseInstance) return supabaseInstance;
 
-  const url = (import.meta as any).env.VITE_SUPABASE_URL;
-  const key = (import.meta as any).env.VITE_SUPABASE_ANON_KEY;
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   // Check if variables are missing or contain placeholders
   const isMissing = !url || !key;
-  const isPlaceholder = url === 'YOUR_SUPABASE_URL' || key === 'YOUR_SUPABASE_ANON_KEY' || !url?.startsWith('http');
+  const isPlaceholder = url === 'YOUR_SUPABASE_URL' || key === 'YOUR_SUPABASE_ANON_KEY';
+  const isInvalidUrl = !isMissing && !isPlaceholder && !url.startsWith('http');
 
-  if (isMissing || isPlaceholder) {
-    if (!isMissing && !url?.startsWith('http') && url !== 'YOUR_SUPABASE_URL') {
-      console.warn('VITE_SUPABASE_URL must be a valid HTTP/HTTPS URL.');
+  if (isMissing || isPlaceholder || isInvalidUrl) {
+    if (isInvalidUrl) {
+      console.warn('VITE_SUPABASE_URL is not a valid URL. It must start with http:// or https://');
     } else {
-      console.warn('Supabase configuration is incomplete. Authentication and database features will be disabled until VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are provided in settings.');
+      console.warn('Supabase configuration is missing or using placeholders. Please check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your settings.');
     }
     return null;
   }
